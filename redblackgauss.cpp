@@ -27,13 +27,22 @@ void distribute(int rank, int size, double* mt, int H, int W)
     MPI_Status  status;
     MPI_Recv(&matrix, sizeof(Matrix), MPI_BYTE, 0, 1, MPI_COMM_WORLD, &status);
     matrix.val = new double[matrix.w * matrix.h];
-    MPI_Recv(matrix.val, matrix.w * matrix.h, MPI_DOUBLE, i, 2, MPI_COMM_WORLD); 
+    MPI_Recv(matrix.val, matrix.w * matrix.h, MPI_DOUBLE, 0, 2, MPI_COMM_WORLD); 
   }
   return matrix;
 }
 void gather(int rank, int size, double* mt, int H, int W)
 {
-  
+  if(rank == 0)
+    {
+      MPI_Status status;
+      for(int i = 1; i < size; i++)
+	MPI_Recv(mt + (r0-1 + (i-1)*d)*W, (d + 2)*W, MPI_DOUBLE, i, 6, MPI_COMM_WORLD, &status);
+    }
+  if(rank > 0)
+    {
+      MPI_Send(mt, H * W, MPI_DOUBLE, 0, 6, MPI_COMM_WORLD);
+    }
 }
 
   void exchange_boundary(int rank, int size, double* matrix, int W, int H)
